@@ -231,7 +231,7 @@ class DDPM(nn.Module):
             print(f'Sampling timestep {i}', end='\r')
 
             ##################
-            ### Problem 1 (b): Implement ddpm_schedules()
+            ### Problem 1 (c) 
             ##################
             ##################
         return x_i
