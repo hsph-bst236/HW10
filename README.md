@@ -40,11 +40,11 @@ Train the DDPM model on the MNIST dataset using the code provided. If running on
 
 # Problem 2: Flow Matching on MNIST
 
-In this problem, you will implement Conditional Flow Matching (CFM) for the MNIST dataset. CFM is a generative model that learns a conditional flow field. This assignment will guide you through implementing key components of CFM and training the model on MNIST.
+In this problem, you will implement Conditional Flow Matching (CFM) for the MNIST dataset. CFM is a generative model that learns a conditional flow field. This assignment will guide you through implementing key components of CFM and training the model on MNIST. You will need to make a `ddpm_plots` directory for the figures to save. 
 
 ## Flow Process
 
-In CFM, the model learns a time-dependent vector field that progressively transforms a noise sample into a data sample through a continuous flow. The conditional probability paths for this process are defined by a mean $\mu_t(x)$ and standard deviation $\sigma_t(x)$ that change linearly over time. We use Optimal Transport Conditional Vector Field (VF) in this problem.
+In conditional flow matching (CFM), the model learns a time-dependent vector field that progressively transforms a noise sample into a data sample through a continuous flow. The conditional probability paths for this process are defined by a mean $\mu_t(x)$ and standard deviation $\sigma_t(x)$ that change linearly over time. We use Optimal Transport Conditional Vector Field (VF) in this problem. The code you will need to complete is in `flow_matching.py`. 
 
 ### Key Quantities
 The key quantities for the flow process are:
@@ -81,5 +81,5 @@ Implement the function `compute_conditional_flow()`, which calculates the condit
 Implement the function `sample_xt()`, which draws a sample from the probability path $\mathcal{N}(\mu_t(x), \sigma_t(x))$.
 
 ## Part (e)
-Train the CFM model on the MNIST dataset using the code provided. Again, expect approximately 30 minutes per epoch on CPU. 
+Train the CFM model on the MNIST dataset using the code provided. Again, expect approximately 30 minutes per epoch on CPU. You will need to make a `flow_plots` directory for the figures to save. 
 
