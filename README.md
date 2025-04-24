@@ -83,3 +83,5 @@ Implement the function `sample_xt()`, which draws a sample from the probability 
 ## Part (e)
 Train the CFM model on the MNIST dataset using the code provided. Again, expect approximately 30 minutes per epoch on CPU. You will need to make a `flow_plots` directory for the figures to save. 
 
+Compare the results from DDPM and Flow matching. Comment on the differences between these two results.
+
