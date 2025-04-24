@@ -237,8 +237,7 @@ class DDPM(nn.Module):
         return x_i
 
 
-def train_main_loop(ddpm, optim, dataloader, lr,
-                    ws_test, n_epoch, batch_size):
+def train_main_loop(ddpm, optim, dataloader, lr, ws_test, n_epoch, batch_size):
     for ep in range(n_epoch):
         print(f'epoch {ep}')
         ddpm.train()
@@ -246,9 +245,10 @@ def train_main_loop(ddpm, optim, dataloader, lr,
         # linear lrate decay
         optim.param_groups[0]['lr'] = lr*(1-ep/n_epoch)
 
-        pbar = tqdm(dataloader)
+        # Change to regular tqdm
+        pbar = tqdm(dataloader, desc=f"Training epoch {ep}")
         loss_ema = None
-        # train
+        
         for x, c in pbar:
             optim.zero_grad()
             x = x.to(device)
@@ -268,22 +268,27 @@ def train_main_loop(ddpm, optim, dataloader, lr,
             n_sample = 20
             for w_i, w in enumerate(ws_test):
                 x_gen = ddpm.sample(n_sample, (1, 28, 28), device, guide_w=w)
-
-            fig, ax = plt.subplots(5, 4, figsize=(6, 6))
-            for i, j in itertools.product(range(5), range(4)):
-                ax[i,j].get_xaxis().set_visible(False)
-                ax[i,j].get_yaxis().set_visible(False)
-
-            for k in range(n_sample):
-                i = k//4
-                j = k%4
-                ax[i,j].cla()
-                ax[i,j].imshow(x_gen[k,:].data.cpu().numpy().reshape(28, 28), cmap='Greys')
-            plt.show()
+                
+                # Create directory if it doesn't exist
+                os.makedirs('ddpm_plots', exist_ok=True)
+                
+                # Plot samples
+                fig, ax = plt.subplots(5, 4, figsize=(8, 10))
+                for i, j in itertools.product(range(5), range(4)):
+                    ax[i,j].get_xaxis().set_visible(False)
+                    ax[i,j].get_yaxis().set_visible(False)
+                    if i*4 + j < n_sample:
+                        ax[i,j].imshow(x_gen[i*4 + j, 0].cpu().numpy(), cmap='gray')
+                        ax[i,j].set_title(f'Sample {i*4 + j}')
+                
+                plt.tight_layout()
+                filename = f'ddpm_plots/samples_epoch_{ep}_w{w}.png'
+                plt.savefig(filename, dpi=200, bbox_inches='tight')
+                print(f"Saved plot to {filename}")
+                plt.close()
 
         if ep == n_epoch - 1:
           plt.savefig('final_generated_samples.png', bbox_inches='tight')
-
 
 # hardcoding these here
 n_epoch = 20
