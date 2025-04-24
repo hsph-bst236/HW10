@@ -1,12 +1,22 @@
-# Problem 1: DDPM on MNIST
+# Homework 10: Generative Models
+
+The due date is May 1st at midnight. Please follow the [code squad rules](https://junwei-lu.github.io/bst236/chapter_syllabus/syllabus/#code-squad). If you are using the late days, please note in the head of README.md that "We used XX late days this time, and we have XX days remaining". 
+
+The main purpose of this homework is to help you:
+
+- Implement the DDPM and Flow Mathcing method
+- Understand the difference between different generative methods
+
+
+## Problem 1: DDPM on MNIST
 
 In this problem, you will implement a Denoising Diffusion Probabilistic Model (DDPM) for the MNIST dataset. The DDPM is a generative model that progressively corrupts a data sample through a series of noise additions (forward process) and then learns to reverse this process to generate new samples (reverse process). The code you will need to fill in is in `ddpm.py`. 
 
-## Forward Process
+### Forward Process
 
 The forward process in DDPM progressively adds Gaussian noise to an image over $T$ timesteps. The noise schedule is controlled by a series of variance values $\beta_t$, which determine how much noise is added at each timestep.
 
-### Key Quantities
+#### Key Quantities
 The key quantities for the forward process contain:
 - $\beta_t$: the variance schedule for each timestep
 - $\bar{\alpha}_t$: the cumulative product of $\alpha_t$ up to timestep $t$
@@ -20,33 +30,33 @@ where $\beta_{min}$ and $\beta_{max}$ are hyperparameters controlling the noise 
 $$\alpha_t = 1 - \beta_t$$
 $$\bar{\alpha}_t = \prod_{i=1}^t \alpha_i$$
 
-## Part (a)
+### Part (a)
 Implement the `ddpm_schedules()` function.
 
-## Part (b)
+### Part (b)
 The forward process gradually adds noise to the data at each timestep $t$. Given a data sample $x_0$ and a timestep $t$, the noisy version $x_t$ can be computed as:
 
 $$x_t = \sqrt{\bar{\alpha}_t}x_0 + \sqrt{1-\bar{\alpha}_t}\epsilon, \quad \epsilon \sim \mathcal{N}(0,I)$$
 
-## Part (c)
+### Part (c)
 Given $x_T \sim \mathcal{N}(0,I)$ (pure Gaussian noise), the reverse process can be written as:
 
 $$x_{t-1} = \frac{1}{\sqrt{\alpha_t}}\left(x_t - \frac{1-\alpha_t}{\sqrt{1-\bar{\alpha}_t}}\epsilon_\theta(x_t,t)\right) + \sigma_t z, \quad z \sim \mathcal{N}(0,I)$$
 
 where $\sigma_t$ is related to the variance at each step.
 
-## Part (d)
+### Part (d)
 Train the DDPM model on the MNIST dataset using the code provided. If running on CPU, expect approximately 10 hours for training (30 minutes per epoch). The runtime is likely to be significantly faster on a GPU. 
 
-# Problem 2: Flow Matching on MNIST
+## Problem 2: Flow Matching on MNIST
 
 In this problem, you will implement Conditional Flow Matching (CFM) for the MNIST dataset. CFM is a generative model that learns a conditional flow field. This assignment will guide you through implementing key components of CFM and training the model on MNIST. You will need to make a `ddpm_plots` directory for the figures to save. 
 
-## Flow Process
+### Flow Process
 
 In conditional flow matching (CFM), the model learns a time-dependent vector field that progressively transforms a noise sample into a data sample through a continuous flow. The conditional probability paths for this process are defined by a mean $\mu_t(x)$ and standard deviation $\sigma_t(x)$ that change linearly over time. We use Optimal Transport Conditional Vector Field (VF) in this problem. The code you will need to complete is in `flow_matching.py`. 
 
-### Key Quantities
+#### Key Quantities
 The key quantities for the flow process are:
 - $\mu_t(x) = tx_1$
 - $\sigma_t(x) = 1 - (1 - \sigma_{min})t$
@@ -61,26 +71,26 @@ The conditional flow that corresponds to $u_t(x|x_1)$ is given by:
 
 $$\psi_t(x) = (1 - (1 - \sigma_{min})t)x + tx_1$$
 
-### Loss Function
+#### Loss Function
 In this case, the CFM loss is defined as:
 
 $$L_{CFM}(\theta) = \mathbb{E}_{t,q(x_1),p(x_0)} \|v_t(\psi_t(x_0)) - (x_1 - (1 - \sigma_{min})x_0)\|^2$$
 
 We use $\sigma_{min} = 0$ in this assignment.
 
-## Part (a)
+### Part (a)
 Implement the function `compute_mu_t()`, which computes the mean $\mu_t(x)$.
 
-## Part (b)
+### Part (b)
 Implement the function `compute_sigma_t()`, which computes the standard deviation $\sigma_t(x)$.
 
-## Part (c)
+### Part (c)
 Implement the function `compute_conditional_flow()`, which calculates the conditional vector field $u_t(x|x_1)$.
 
-## Part (d)
+### Part (d)
 Implement the function `sample_xt()`, which draws a sample from the probability path $\mathcal{N}(\mu_t(x), \sigma_t(x))$.
 
-## Part (e)
+### Part (e)
 Train the CFM model on the MNIST dataset using the code provided. Again, expect approximately 30 minutes per epoch on CPU. You will need to make a `flow_plots` directory for the figures to save. 
 
 Compare the results from DDPM and Flow matching. Comment on the differences between these two results.
