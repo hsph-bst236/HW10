@@ -214,37 +214,54 @@ class ConditionalFlowMatcher:
             return t, xt, ut
         
 def train_main_loop(n_epochs, optimizer, FM, model):
-  for epoch in range(n_epochs):
-      print(f'epoch {epoch}')
-      pbar = tqdm(train_loader)
-      for i, data in enumerate(pbar):
-          optimizer.zero_grad()
-          x1 = data[0].to(device)
-          x0 = torch.randn_like(x1)
-          t, xt, ut = FM.sample_location_and_conditional_flow(x0, x1)
-          vt = model(xt, t)
-          loss = torch.mean((vt - ut) ** 2)
-          loss.backward()
-          optimizer.step()
-          pbar.set_description(f"loss: {loss.item():.4f}")
+    # Create plots directory
+    #os.makedirs('flow_plots', exist_ok=True)
+    
+    for epoch in range(n_epochs):
+        print(f'epoch {epoch}')
+        # Change from tqdm.notebook to regular tqdm
+        pbar = tqdm(train_loader, desc=f"Training epoch {epoch}")
+        
+        for i, data in enumerate(pbar):
+            optimizer.zero_grad()
+            x1 = data[0].to(device)
+            x0 = torch.randn_like(x1)
+            t, xt, ut = FM.sample_location_and_conditional_flow(x0, x1)
+            vt = model(xt, t)
+            loss = torch.mean((vt - ut) ** 2)
+            loss.backward()
+            optimizer.step()
+            pbar.set_description(f"loss: {loss.item():.4f}")
 
-      with torch.no_grad():
-          traj = torchdiffeq.odeint(
-              lambda t, x: model.forward(x, t),
-              torch.randn(100, 1, 28, 28, device=device),
-              torch.linspace(0, 1, 2, device=device),
-              atol=1e-4,
-              rtol=1e-4,
-              method="dopri5",
-          )
+        # Generate and save samples
+        with torch.no_grad():
+            traj = torchdiffeq.odeint(
+                lambda t, x: model.forward(x, t),
+                torch.randn(100, 1, 28, 28, device=device),
+                torch.linspace(0, 1, 2, device=device),
+                atol=1e-4,
+                rtol=1e-4,
+                method="dopri5",
+            )
 
-      grid = make_grid(
-          traj[-1, :100].view([-1, 1, 28, 28]).clip(0, 1), value_range=(0, 1), padding=0, nrow=10
-      )
+            grid = make_grid(
+                traj[-1, :100].view([-1, 1, 28, 28]).clip(0, 1), 
+                value_range=(0, 1), 
+                padding=2, 
+                nrow=10
+            )
 
-      img = ToPILImage()(grid)
-      plt.imshow(img)
-      plt.show()
+            # Create figure and save
+            plt.figure(figsize=(10, 10))
+            plt.imshow(grid.cpu().permute(1, 2, 0))
+            plt.axis('off')
+            plt.savefig(f'flow_plots/samples_epoch_{epoch}.png', 
+                       bbox_inches='tight', 
+                       pad_inches=0.2,
+                       dpi=150)
+            plt.close()
+
+        print(f"Saved samples for epoch {epoch}")
 
 ##################
 ### Problem 1 (e): training
